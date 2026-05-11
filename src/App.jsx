@@ -1,12 +1,12 @@
 import { useState } from "react";
 
 const COLORS = [
-  "bg-blue-100 border-blue-400 text-blue-800",
-  "bg-green-100 border-green-400 text-green-800",
-  "bg-purple-100 border-purple-400 text-purple-800",
-  "bg-yellow-100 border-yellow-400 text-yellow-800",
-  "bg-pink-100 border-pink-400 text-pink-800",
-  "bg-orange-100 border-orange-400 text-orange-800",
+  { bg: "from-violet-500 to-purple-600", light: "bg-violet-50 text-violet-700 border-violet-200" },
+  { bg: "from-blue-500 to-cyan-600", light: "bg-blue-50 text-blue-700 border-blue-200" },
+  { bg: "from-emerald-500 to-teal-600", light: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  { bg: "from-orange-500 to-amber-600", light: "bg-orange-50 text-orange-700 border-orange-200" },
+  { bg: "from-pink-500 to-rose-600", light: "bg-pink-50 text-pink-700 border-pink-200" },
+  { bg: "from-indigo-500 to-blue-600", light: "bg-indigo-50 text-indigo-700 border-indigo-200" },
 ];
 
 const SESSION_LENGTHS = [30, 45, 60, 90];
@@ -37,9 +37,7 @@ function generateSchedule(subjects, sessionLen) {
     const slots = Math.min(active.length, 3);
     const sorted = [...active].sort((a, b) => a.daysLeft - b.daysLeft);
     const sessions = [];
-    for (let i = 0; i < slots; i++) {
-      sessions.push(sorted[i % sorted.length]);
-    }
+    for (let i = 0; i < slots; i++) sessions.push(sorted[i % sorted.length]);
     schedule.push({ date, sessions: sessions.slice(0, slots) });
   }
   return schedule;
@@ -87,108 +85,167 @@ export default function App() {
     setStep("result");
   };
 
-  const colorFor = (name) => {
-    const idx = [...new Set(subjects.map(s => s.name))].indexOf(name);
-    return COLORS[idx % COLORS.length];
-  };
-
+  const colorFor = i => COLORS[i % COLORS.length];
+  const subjectIndex = name => [...new Set(subjects.map(s => s.name))].indexOf(name);
   const fmt = d => d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
   const isToday = d => d.toDateString() === new Date().toDateString();
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">📚 Smart Study Planner</h1>
-          <p className="text-gray-500 text-sm mt-1">Enter your subjects & exam dates — get a personalized study schedule</p>
+    <div style={{ fontFamily: "'Inter', sans-serif" }} className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Header */}
+      <div className="bg-white bg-opacity-10 backdrop-blur-sm border-b border-white border-opacity-10 px-4 py-4">
+        <div className="max-w-lg mx-auto flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-lg">📚</div>
+          <div>
+            <h1 className="text-white font-bold text-lg leading-none">Smart Study Planner</h1>
+            <p className="text-purple-300 text-xs mt-0.5">AI-powered exam preparation</p>
+          </div>
         </div>
+      </div>
+
+      <div className="max-w-lg mx-auto px-4 py-6">
         {step === "input" && (
-          <div className="bg-white rounded-2xl shadow p-5 space-y-4">
-            <h2 className="font-semibold text-gray-700">Your Subjects</h2>
-            {subjects.map((s, i) => (
-              <div key={i} className="flex gap-2 items-center">
-                <input
-                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                  placeholder="Subject name (e.g. MAT 1100)"
-                  value={s.name}
-                  onChange={e => updateSubject(i, "name", e.target.value)}
-                />
-                <input
-                  type="date"
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                  value={s.examDate}
-                  onChange={e => updateSubject(i, "examDate", e.target.value)}
-                />
-                {subjects.length > 1 && (
-                  <button onClick={() => removeSubject(i)} className="text-red-400 hover:text-red-600 text-lg font-bold">×</button>
-                )}
+          <div className="space-y-4">
+            {/* Hero */}
+            <div className="text-center py-4">
+              <h2 className="text-white text-2xl font-bold">Plan Your Success 🎯</h2>
+              <p className="text-purple-300 text-sm mt-1">Add your subjects and get a smart study schedule</p>
+            </div>
+
+            {/* Subjects Card */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl border border-white border-opacity-10 p-5">
+              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-lg bg-violet-500 flex items-center justify-center text-xs">1</span>
+                Your Subjects
+              </h3>
+              <div className="space-y-3">
+                {subjects.map((s, i) => (
+                  <div key={i} className="flex gap-2 items-center">
+                    <div className={`w-2 h-8 rounded-full bg-gradient-to-b ${colorFor(i).bg} flex-shrink-0`} />
+                    <input
+                      className="flex-1 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl px-3 py-2 text-sm text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 focus:bg-opacity-20"
+                      placeholder="Subject (e.g. MAT 1100)"
+                      value={s.name}
+                      onChange={e => updateSubject(i, "name", e.target.value)}
+                    />
+                    <input
+                      type="date"
+                      className="bg-white bg-opacity-10 border border-white border-opacity-20 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-400"
+                      value={s.examDate}
+                      onChange={e => updateSubject(i, "examDate", e.target.value)}
+                    />
+                    {subjects.length > 1 && (
+                      <button onClick={() => removeSubject(i)} className="text-red-400 hover:text-red-300 text-xl font-bold flex-shrink-0">×</button>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
-            <button onClick={addSubject} className="text-blue-500 text-sm hover:underline">+ Add subject</button>
-            <div>
-              <label className="text-sm font-medium text-gray-600 block mb-2">Session length</label>
-              <div className="flex gap-2">
+              <button onClick={addSubject} className="mt-3 text-purple-300 text-sm hover:text-white transition flex items-center gap-1">
+                <span className="text-lg">+</span> Add another subject
+              </button>
+            </div>
+
+            {/* Session Length Card */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl border border-white border-opacity-10 p-5">
+              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-lg bg-blue-500 flex items-center justify-center text-xs">2</span>
+                Session Length ⏱️
+              </h3>
+              <div className="grid grid-cols-4 gap-2">
                 {SESSION_LENGTHS.map(l => (
                   <button
                     key={l}
                     onClick={() => setSessionLen(l)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition ${sessionLen === l ? "bg-blue-500 text-white border-blue-500" : "bg-white text-gray-600 border-gray-200 hover:border-blue-300"}`}
+                    className={`py-2.5 rounded-xl text-sm font-semibold transition ${
+                      sessionLen === l
+                        ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg"
+                        : "bg-white bg-opacity-10 text-purple-300 border border-white border-opacity-10 hover:bg-opacity-20"
+                    }`}
                   >
-                    {l} min
+                    {l}m
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Generate Button */}
             <button
               onClick={handleGenerate}
               disabled={loading}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition disabled:opacity-60"
+              className="w-full py-4 rounded-2xl font-bold text-white text-lg bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 shadow-xl shadow-purple-900 transition disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {loading ? "Generating..." : "Generate My Schedule →"}
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Generating your plan...
+                </>
+              ) : (
+                <>✨ Generate My Schedule</>
+              )}
             </button>
           </div>
         )}
+
         {step === "result" && schedule && (
           <div className="space-y-4">
+            {/* AI Tips */}
             {aiTips && (
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-                <p className="text-xs font-semibold text-blue-600 mb-1">✨ AI Study Tips</p>
-                <p className="text-sm text-blue-800 whitespace-pre-line">{aiTips}</p>
+              <div className="bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-5 shadow-xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xl">✨</span>
+                  <p className="text-white font-bold">AI Study Tips</p>
+                </div>
+                <p className="text-purple-100 text-sm leading-relaxed whitespace-pre-line">{aiTips}</p>
               </div>
             )}
-            <div className="bg-white rounded-2xl shadow p-4">
-              <p className="text-xs text-gray-500 font-semibold mb-2">SUBJECTS</p>
+
+            {/* Subject Pills */}
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl border border-white border-opacity-10 p-4">
+              <p className="text-purple-300 text-xs font-semibold uppercase tracking-wider mb-3">Your Exams</p>
               <div className="flex flex-wrap gap-2">
-                {subjects.filter(s => s.name).map((s, i) => (
-                  <span key={i} className={`text-xs px-2 py-1 rounded-full border font-medium ${colorFor(s.name)}`}>
-                    {s.name} — {getDaysUntil(s.examDate)} days left
+                {subjects.filter(s => s.name && s.examDate).map((s, i) => (
+                  <span key={i} className={`text-xs px-3 py-1.5 rounded-full border font-semibold ${colorFor(subjectIndex(s.name)).light}`}>
+                    {s.name} · {getDaysUntil(s.examDate)}d left
                   </span>
                 ))}
               </div>
             </div>
+
+            {/* Schedule */}
             <div className="space-y-3">
               {schedule.map((day, i) => (
-                <div key={i} className={`bg-white rounded-2xl shadow p-4 ${isToday(day.date) ? "ring-2 ring-blue-400" : ""}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="font-semibold text-gray-700 text-sm">
-                      {isToday(day.date) ? "📍 Today — " : ""}{fmt(day.date)}
-                    </p>
-                    <p className="text-xs text-gray-400">{day.sessions.length} session{day.sessions.length > 1 ? "s" : ""} · {day.sessions.length * sessionLen} min</p>
+                <div key={i} className={`rounded-2xl border p-4 ${
+                  isToday(day.date)
+                    ? "bg-white bg-opacity-15 border-purple-400 shadow-lg shadow-purple-900"
+                    : "bg-white bg-opacity-5 border-white border-opacity-10"
+                }`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      {isToday(day.date) && <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />}
+                      <p className="text-white font-semibold text-sm">
+                        {isToday(day.date) ? "Today" : fmt(day.date)}
+                      </p>
+                    </div>
+                    <p className="text-purple-300 text-xs">{day.sessions.length * sessionLen} min total</p>
                   </div>
-                  <div className="space-y-1.5">
-                    {day.sessions.map((s, j) => (
-                      <div key={j} className={`flex items-center justify-between px-3 py-1.5 rounded-lg border text-sm font-medium ${colorFor(s.name)}`}>
-                        <span>{s.name}</span>
-                        <span className="text-xs opacity-70">{sessionLen} min</span>
-                      </div>
-                    ))}
+                  <div className="space-y-2">
+                    {day.sessions.map((s, j) => {
+                      const c = colorFor(subjectIndex(s.name));
+                      return (
+                        <div key={j} className={`flex items-center justify-between px-3 py-2 rounded-xl border text-sm font-semibold ${c.light}`}>
+                          <span>{s.name}</span>
+                          <span className="text-xs opacity-70 font-normal">{sessionLen} min</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
             </div>
+
             <button
               onClick={() => { setStep("input"); setSchedule(null); setAiTips(""); }}
-              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl transition"
+              className="w-full py-3 rounded-2xl font-semibold text-purple-300 border border-white border-opacity-10 bg-white bg-opacity-5 hover:bg-opacity-10 transition"
             >
               ← Edit Subjects
             </button>
